@@ -4,6 +4,7 @@ from stock_pred_test import csv_to_dataset, history_points
 
 model = load_model('technical_model.h5')
 
+
 ohlcv_histories, technical_indicators, next_day_open_values, unscaled_y, y_normaliser = csv_to_dataset('data/daily_MSFT.csv', 50)
 
 test_split = 0.9
