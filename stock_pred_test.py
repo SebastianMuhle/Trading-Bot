@@ -21,7 +21,7 @@ y_test = next_day_open_values[n:]
 unscaled_y_test = unscaled_y[n:]
 
 model = build_model(history_points, technical_indicators)
-model.fit(x=[ohlcv_train, tech_ind_train], y=y_train, batch_size=32, epochs=50, shuffle=True, validation_split=0.1, verbose=2)
+model.fit(x=[ohlcv_train, tech_ind_train], y=y_train, batch_size=32, epochs=2, shuffle=True, validation_split=0.1, verbose=2)
 
 # evaluation
 y_test_predicted = model.predict([ohlcv_test, tech_ind_test])
