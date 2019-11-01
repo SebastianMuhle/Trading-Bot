@@ -17,6 +17,7 @@ def csv_to_dataset(csv_path, history_points):
     change = (open_price - open_price.shift(1)) / open_price.shift(1) * 100
     stock_index['change_S&P500'] = change
     stock_index.dropna(inplace=True)
+    # Drop unnecessary columns
     del (stock_index['Open'])
     del (stock_index['High'])
     del (stock_index['Low'])
@@ -27,6 +28,7 @@ def csv_to_dataset(csv_path, history_points):
     print(stock_index.head())
 
     # Merge
+    # Delete the comment to use S&P 500! Be aware of the LSTM Input
     #data = pd.merge(data, stock_index, on='timestamp')
     print("Before reordering")
     print(data.head())
@@ -51,7 +53,7 @@ def csv_to_dataset(csv_path, history_points):
     data_normalised = data_normaliser.fit_transform(data)
 
     # TODO replace 'ohlcv_histories_normalised' with 'training window'
-    # TODO and the comment # Containing open high low close volume
+    # TODO and add the comment # Containing open high low close volume
     print('Length data normalised', len(data_normalised))
     ohlcv_histories_normalised = np.array(
         [data_normalised[i:i + history_points].copy() for i in range(len(data_normalised) - history_points)])
@@ -69,6 +71,7 @@ def csv_to_dataset(csv_path, history_points):
     y_normaliser.fit(next_day_open_values)
 
     technical_indicators = []
+    # TODO add an input parameter, that leads you decide which technical indicators to choose from
     for his in ohlcv_histories_normalised:
         # note since we are using his[3] we are taking the SMA of the closing price
         sma = np.mean(his[:, 3])

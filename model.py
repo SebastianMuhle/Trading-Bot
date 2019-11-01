@@ -3,7 +3,7 @@ from keras.layers import Dense, Dropout, LSTM, Input, Activation, concatenate
 from keras import optimizers
 
 
-def build_model(history_points, technical_indicators, number_of_lstm_features=5, two_lstm_layers=True,
+def build_model(history_points, technical_indicators, number_of_lstm_features=5, two_lstm_layers=False,
                 number_of_neurons_lstm=50, two_layers_second_branch=False, number_of_neurons_second_branch=20,
                 dropout_rate=0.2):
     # Defining the two sets of inpus
@@ -30,6 +30,17 @@ def build_model(history_points, technical_indicators, number_of_lstm_features=5,
         technical_indicators_branch = Model(inputs=dense_input, outputs=y2)
     else:
         technical_indicators_branch = Model(inputs=dense_input, outputs=y)
+
+    x = LSTM(50, name='lstm_0')(lstm_input)
+    x = Dropout(0.2, name='lstm_dropout_0')(x)
+    lstm_branch = Model(inputs=lstm_input, outputs=x)
+
+    # the second branch opreates on the second input
+    y = Dense(20, name='tech_dense_0')(dense_input)
+    y = Activation("relu", name='tech_relu_0')(y)
+    y = Dropout(0.2, name='tech_dropout_0')(y)
+    technical_indicators_branch = Model(inputs=dense_input, outputs=y)
+
 
     # Combining the output of the two branches
     combined = concatenate([lstm_branch.output, technical_indicators_branch.output], name='concatenate')
