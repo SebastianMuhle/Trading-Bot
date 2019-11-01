@@ -36,32 +36,8 @@ def train_bot(file_path):
     scaled_mse = real_mse / (np.max(unscaled_y_test) - np.min(unscaled_y_test)) * 100
     print(scaled_mse)
 
-    import matplotlib.pyplot as plt
+    return scaled_mse, unscaled_y_test, y_test_predicted, ohlcv_test, tech_ind_test
 
-    plt.gcf().set_size_inches(22, 15, forward=True)
-
-    start = 0
-    end = -1
-
-    real = plt.plot(unscaled_y_test[start:end], label='real')
-    pred = plt.plot(y_test_predicted[start:end], label='predicted')
-
-    plt.legend(['Real', 'Predicted'])
-
-    plt.show()
-
-    # TODO WRITE THE OUTPUT AND BUYING DECSIONS IN A CSV FILE
-
-    from datetime import datetime
-    #model.save(f'technical_model.h5')
-    #plt.figure()
-    #all_predict = np.append(y_predicted[start:end], y_test_predicted[start:end], axis=0)
-    #print(all_predict.shape)
-    #complet_real = plt.plot(unscaled_y[start:n], label='real')
-    #complet_pred = plt.plot(y_predicted[start:end], label='predicted')
-    #complet_pred = plt.plot(all_predict, label='predicted')
-
-    #plt.show()
 
     buys = []
     sells = []
