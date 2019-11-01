@@ -21,7 +21,7 @@ def csv_to_dataset(csv_path):
     print(data.shape)
 
     # Read S&P 500 and calculate the daily change rate
-    stock_index = pd.read_csv('SP500.csv')
+    stock_index = pd.read_csv('data/SP500.csv')
     open_price = stock_index['Open']
     change = (open_price - open_price.shift(1)) / open_price.shift(1) * 100
     stock_index['change_S&P500'] = change
@@ -95,7 +95,7 @@ def csv_to_dataset(csv_path):
     return ohlcv_histories_normalised, technical_indicators_normalised, next_day_open_values_normalised, next_day_open_values, y_normaliser
 
 # Get the data
-ohlcv_histories, technical_indicators, next_day_open_values, unscaled_y, y_normaliser = csv_to_dataset('MSFT_daily.csv')
+ohlcv_histories, technical_indicators, next_day_open_values, unscaled_y, y_normaliser = csv_to_dataset('data/MSFT_daily.csv')
 
 # Train-Test Set split
 test_split = 0.9
