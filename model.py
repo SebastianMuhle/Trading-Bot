@@ -12,12 +12,14 @@ def build_model(history_points, technical_indicators, number_of_lstm_features=5,
     dense_input = Input(shape=(technical_indicators.shape[1],), name='tech_input')
 
     # First branch operating on the first input
-    x = LSTM(number_of_neurons_lstm, name='lstm_0', return_sequences=True)(lstm_input)
-    x = Dropout(dropout_rate, name='lstm_dropout_0')(x)
     if two_lstm_layers:
+        x = LSTM(number_of_neurons_lstm, name='lstm_0', return_sequences=True)(lstm_input)
+        x = Dropout(dropout_rate, name='lstm_dropout_0')(x)
         x2 = LSTM(number_of_neurons_lstm, name='lstm_1')(x)
         lstm_branch = Model(inputs=lstm_input, outputs=x2)
     else:
+        x = LSTM(number_of_neurons_lstm, name='lstm_0')(lstm_input)
+        x = Dropout(dropout_rate, name='lstm_dropout_0')(x)
         lstm_branch = Model(inputs=lstm_input, outputs=x)
 
     # Second branch operating on the second input
@@ -30,17 +32,6 @@ def build_model(history_points, technical_indicators, number_of_lstm_features=5,
         technical_indicators_branch = Model(inputs=dense_input, outputs=y2)
     else:
         technical_indicators_branch = Model(inputs=dense_input, outputs=y)
-
-    x = LSTM(50, name='lstm_0')(lstm_input)
-    x = Dropout(0.2, name='lstm_dropout_0')(x)
-    lstm_branch = Model(inputs=lstm_input, outputs=x)
-
-    # the second branch opreates on the second input
-    y = Dense(20, name='tech_dense_0')(dense_input)
-    y = Activation("relu", name='tech_relu_0')(y)
-    y = Dropout(0.2, name='tech_dropout_0')(y)
-    technical_indicators_branch = Model(inputs=dense_input, outputs=y)
-
 
     # Combining the output of the two branches
     combined = concatenate([lstm_branch.output, technical_indicators_branch.output], name='concatenate')
