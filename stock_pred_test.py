@@ -1,11 +1,3 @@
-import pandas as pd
-from sklearn import preprocessing
-import numpy as np
-import keras
-import tensorflow as tf
-from keras.models import Model
-from keras.layers import Dense, Dropout, LSTM, Input, Activation, concatenate
-from keras import optimizers
 from data_preprocessing import csv_to_dataset
 from model import build_model
 import numpy as np
@@ -28,11 +20,10 @@ tech_ind_test = technical_indicators[n:]
 y_test = next_day_open_values[n:]
 unscaled_y_test = unscaled_y[n:]
 
-
 model = build_model(history_points, technical_indicators)
 model.fit(x=[ohlcv_train, tech_ind_train], y=y_train, batch_size=32, epochs=2, shuffle=True, validation_split=0.1, verbose=2)
-# evaluation
 
+# evaluation
 y_test_predicted = model.predict([ohlcv_test, tech_ind_test])
 y_test_predicted = y_normaliser.inverse_transform(y_test_predicted)
 y_predicted = model.predict([ohlcv_histories, technical_indicators])
@@ -59,10 +50,15 @@ plt.legend(['Real', 'Predicted'])
 
 plt.show()
 
-# TODO Fix last plot
+# TODO WRITE THE OUTPUT AND BUYING DECSIONS IN A CSV FILE
 
 from datetime import datetime
-model.save(f'technical_model.h5')
-plt.figure()
-complet_real = plt.plot(unscaled_y[start:n], label='real')
-complet_pred = plt.plot(y_predicted[start:end], label='predicted')
+#model.save(f'technical_model.h5')
+#plt.figure()
+#all_predict = np.append(y_predicted[start:end], y_test_predicted[start:end], axis=0)
+#print(all_predict.shape)
+#complet_real = plt.plot(unscaled_y[start:n], label='real')
+#complet_pred = plt.plot(y_predicted[start:end], label='predicted')
+#complet_pred = plt.plot(all_predict, label='predicted')
+
+#plt.show()
