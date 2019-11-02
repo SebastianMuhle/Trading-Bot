@@ -4,12 +4,13 @@ import numpy as np
 np.random.seed(4)
 
 
-def train_bot(file_path):
+def train_bot(file_path, history_points, number_of_epochs, two_lstm_layers, number_of_neurons_lstm,
+              two_layers_second_branch, number_of_neurons_second_branch, dropout_rate):
     # Model trains and predicts based on the last 50 days of trading
-    history_points = 50
 
     # Get the data
-    ohlcv_histories, technical_indicators, next_day_open_values, unscaled_y, y_normaliser = csv_to_dataset(file_path, history_points)
+    ohlcv_histories, technical_indicators, next_day_open_values, unscaled_y, y_normaliser = csv_to_dataset(file_path,
+                                                                                                           history_points)
 
     # Train-Test Set split
     test_split = 0.9
@@ -22,8 +23,13 @@ def train_bot(file_path):
     y_test = next_day_open_values[n:]
     unscaled_y_test = unscaled_y[n:]
 
-    model = build_model(history_points, technical_indicators)
-    model.fit(x=[ohlcv_train, tech_ind_train], y=y_train, batch_size=32, epochs=50, shuffle=True, validation_split=0.1, verbose=2)
+    # Calls the function to build the model
+    model = build_model(history_points=history_points, technical_indicators=technical_indicators,
+                        two_lstm_layers=two_lstm_layers, number_of_neurons_lstm=number_of_neurons_lstm,
+                        two_layers_second_branch=two_layers_second_branch,
+                        number_of_neurons_second_branch=number_of_neurons_second_branch, dropout_rate=dropout_rate)
+    # Runs the training loop
+    model.fit(x=[ohlcv_train, tech_ind_train], y=y_train, batch_size=32, epochs=number_of_epochs, shuffle=True, validation_split=0.1, verbose=2)
 
     # evaluation
     y_test_predicted = model.predict([ohlcv_test, tech_ind_test])

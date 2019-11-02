@@ -13,6 +13,8 @@ def build_model(history_points, technical_indicators, number_of_lstm_features=5,
 
     # First branch operating on the first input
     if two_lstm_layers:
+        print("Two layers")
+        print(two_lstm_layers)
         x = LSTM(number_of_neurons_lstm, name='lstm_0', return_sequences=True)(lstm_input)
         x = Dropout(dropout_rate, name='lstm_dropout_0')(x)
         x2 = LSTM(number_of_neurons_lstm, name='lstm_1')(x)

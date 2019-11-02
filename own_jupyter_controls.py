@@ -30,3 +30,19 @@ def generate_file_path_for_stock_data(ticker_symbol):
     file_path = 'data/daily_' + str(ticker_symbol) + '.csv'
     return file_path
 
+
+def network_architecture_widget():
+    '''
+    This function returns an interactive Jupyter Notebook dropdown widget with all the Dow Jones
+    Stock symbols to choose from.
+    We choose a dropdown menu to make it easier for the user and to guarantee correct user input.
+    '''
+
+    # Dummy function that is required for the widget
+    def f(x):
+        print(x)
+        return x
+
+    widget = interactive(f, x=widgets.IntSlider(min=10, max=128, step=1, value=50),
+                         description='Numbers of Neurons in the LSTM-layer')
+    return widget
