@@ -4,7 +4,7 @@ import numpy as np
 np.random.seed(4)
 
 
-def csv_to_dataset(csv_path, history_points):
+def csv_to_dataset(csv_path, history_points, s_and_p_500):
     print("Start csv_to_dataset")
     # Read the csv
     data = pd.read_csv(csv_path)
@@ -28,8 +28,8 @@ def csv_to_dataset(csv_path, history_points):
     print(stock_index.head())
 
     # Merge
-    # Delete the comment to use S&P 500! Be aware of the LSTM Input
-    #data = pd.merge(data, stock_index, on='timestamp')
+    if s_and_p_500:
+        data = pd.merge(data, stock_index, on='timestamp')
     print("Before reordering")
     print(data.head())
     print(data.shape)

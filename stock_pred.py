@@ -5,12 +5,14 @@ np.random.seed(4)
 
 
 def train_bot(file_path, history_points, number_of_epochs, two_lstm_layers, number_of_neurons_lstm,
-              two_layers_second_branch, number_of_neurons_second_branch, dropout_rate):
+              two_layers_second_branch, number_of_neurons_second_branch, dropout_rate, s_and_p_500):
     # Model trains and predicts based on the last 50 days of trading
+
 
     # Get the data
     ohlcv_histories, technical_indicators, next_day_open_values, unscaled_y, y_normaliser = csv_to_dataset(file_path,
-                                                                                                           history_points)
+                                                                                                           history_points,
+                                                                                                           s_and_p_500)
 
     # Train-Test Set split
     test_split = 0.9
@@ -24,6 +26,10 @@ def train_bot(file_path, history_points, number_of_epochs, two_lstm_layers, numb
     unscaled_y_test = unscaled_y[n:]
 
     # Calls the function to build the model
+    number_of_lstm_features = 5
+    if s_and_p_500:
+        number_of_lstm_features += 1
+
     model = build_model(history_points=history_points, technical_indicators=technical_indicators,
                         two_lstm_layers=two_lstm_layers, number_of_neurons_lstm=number_of_neurons_lstm,
                         two_layers_second_branch=two_layers_second_branch,
