@@ -3,6 +3,18 @@ from sklearn import preprocessing
 import numpy as np
 np.random.seed(4)
 
+def calc_ema(values, time_period):
+        sma = np.mean(values[:,3])
+        ma50 = np.mean(his[:, 3])
+
+        ema_values = [sma]
+        k = 2 / (1 + time_period)
+
+        for i in range(len(his) - time_period, len(his)):
+            close = his[i][3]
+            ema_values.append(close * k + ema_values[-1] * (1 - k))
+        return ema_values[-1]
+
 
 def csv_to_dataset(csv_path, history_points, s_and_p_500):
     print("Start csv_to_dataset")
@@ -74,9 +86,21 @@ def csv_to_dataset(csv_path, history_points, s_and_p_500):
     # TODO add an input parameter, that leads you decide which technical indicators to choose from
     for his in ohlcv_histories_normalised:
         # note since we are using his[3] we are taking the SMA of the closing price
-        sma = np.mean(his[:, 3])
-        technical_indicators.append(np.array([sma]))
-        # technical_indicators.append(np.array([sma,macd,]))
+        ma7 = np.mean(his[-7:, 3])
+        ma21= np.mean(his[-21:, 3])
+        ma50 = np.mean(his[:, 3])
+
+        ema12 = calc_ema(his, 12)
+        ema26 = calc_ema(his, 26)
+        macd = calc_ema(his, 12) - calc_ema(his, 26)
+
+        ten_day_momentum = his[-1, 3]/his[-10, 3]
+
+        std20 = np.std(his[-20:, 3])
+        upper_bands = ma21 + std20*2
+        lower_bands = ma21 - std20*2
+
+        technical_indicators.append(np.array([ma7, ma21, ma50,ema12, ema26,macd,ten_day_momentum,upper_bands, lower_bands,  ]))
 
     technical_indicators = np.array(technical_indicators)
 
@@ -86,4 +110,3 @@ def csv_to_dataset(csv_path, history_points, s_and_p_500):
     assert ohlcv_histories_normalised.shape[0] == next_day_open_values_normalised.shape[0] == \
            technical_indicators_normalised.shape[0]
     return ohlcv_histories_normalised, technical_indicators_normalised, next_day_open_values_normalised, next_day_open_values, y_normaliser
-
