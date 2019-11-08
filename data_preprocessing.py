@@ -3,6 +3,7 @@ from sklearn import preprocessing
 import numpy as np
 np.random.seed(4)
 
+
 def calc_ema(values, time_period):
         sma = np.mean(values[:,3])
         #ma50 = np.mean(his[:, 3])
@@ -17,43 +18,50 @@ def calc_ema(values, time_period):
 
 
 def csv_to_dataset(csv_path, history_points, s_and_p_500, ma7, ma21, ma_his_window, ema12, ema26, mac, ten_day_momentum,
-                   upper_bands, lower_bands, volatilty_index_feature):
+                   upper_bands, lower_bands, volatilty_index_feature, fourier):
     print("Start csv_to_dataset")
     # Read the csv
     data = pd.read_csv(csv_path)
     print(data.head())
     print(data.shape)
 
-    # Read S&P 500 and calculate the daily change rate
-    stock_index = pd.read_csv('data/SP500.csv')
-    open_price = stock_index['Open']
-    change = (open_price - open_price.shift(1)) / open_price.shift(1) * 100
-    stock_index['change_S&P500'] = change
-    stock_index.dropna(inplace=True)
-    # Drop unnecessary columns
-    del (stock_index['Open'])
-    del (stock_index['High'])
-    del (stock_index['Low'])
-    del (stock_index['Close'])
-    del (stock_index['Adj Close'])
-    del (stock_index['Volume'])
-
-    print(stock_index.head())
-
-    # Volatitly index
-    volatilty_index = pd.read_csv('data/SP500.csv')
-    del (volatilty_index['High'])
-    del (volatilty_index['Low'])
-    del (volatilty_index['Close'])
-    del (volatilty_index['Adj Close'])
-    del (volatilty_index['Volume'])
-
-    volatilty_index = volatilty_index.rename(columns={"Date": "timestamp", "Open": "Vol_Index"})
+    # fourier
+    if fourier:
+        data_FT = data[['close']]
+        a = data_FT['close'].tolist()
+        close_fft = np.fft.fft(np.asarray(a))
+        fft_df = pd.DataFrame({'fft': close_fft})
+        data['fft_absolute'] = fft_df['fft'].apply(lambda x: np.abs(x))
+        data['fft_angle'] = fft_df['fft'].apply(lambda x: np.angle(x))
 
     # Merge
     if s_and_p_500:
+        # Read S&P 500 and calculate the daily change rate
+        stock_index = pd.read_csv('data/SP500.csv')
+        open_price = stock_index['Open']
+        change = (open_price - open_price.shift(1)) / open_price.shift(1) * 100
+        stock_index['change_S&P500'] = change
+        stock_index.dropna(inplace=True)
+        # Drop unnecessary columns
+        del (stock_index['Open'])
+        del (stock_index['High'])
+        del (stock_index['Low'])
+        del (stock_index['Close'])
+        del (stock_index['Adj Close'])
+        del (stock_index['Volume'])
+
+        print(stock_index.head())
         data = pd.merge(data, stock_index, on='timestamp')
     if volatilty_index_feature:
+        # Volatitly index
+        volatilty_index = pd.read_csv('data/SP500.csv')
+        del (volatilty_index['High'])
+        del (volatilty_index['Low'])
+        del (volatilty_index['Close'])
+        del (volatilty_index['Adj Close'])
+        del (volatilty_index['Volume'])
+
+        volatilty_index = volatilty_index.rename(columns={"Date": "timestamp", "Open": "Vol_Index"})
         data = pd.merge(data, volatilty_index, on='timestamp')
     print("Before reordering")
     print(data.head())
