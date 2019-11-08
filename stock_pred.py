@@ -5,14 +5,24 @@ np.random.seed(4)
 
 
 def train_bot(file_path, history_points, number_of_epochs, two_lstm_layers, number_of_neurons_lstm,
-              two_layers_second_branch, number_of_neurons_second_branch, dropout_rate, s_and_p_500):
+              two_layers_second_branch, number_of_neurons_second_branch, dropout_rate, s_and_p_500, ma7, ma21,
+              ma_his_window, ema12, ema26, mac, ten_day_momentum,
+              upper_bands, lower_bands):
     # Model trains and predicts based on the last 50 days of trading
 
 
     # Get the data
     ohlcv_histories, technical_indicators, next_day_open_values, unscaled_y, y_normaliser = csv_to_dataset(file_path,
                                                                                                            history_points,
-                                                                                                           s_and_p_500)
+                                                                                                           s_and_p_500,
+                                                                                                           ma7, ma21,
+                                                                                                           ma_his_window,
+                                                                                                           ema12, ema26,
+                                                                                                           mac,
+                                                                                                           ten_day_momentum,
+                                                                                                           upper_bands,
+                                                                                                           lower_bands
+                                                                                                           )
 
     # Train-Test Set split
     test_split = 0.9

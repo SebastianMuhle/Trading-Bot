@@ -27,7 +27,7 @@ def trading(ohlcv_test, tech_ind_test, y_normaliser, model):
     print(f"sells: {len(sells)}")
 
     def compute_earnings(buys_, sells_):
-        purchase_amt = 10
+        purchase_amt = 100
         stock = 0
         balance = 0
         while len(buys_) > 0 and len(sells_) > 0:
