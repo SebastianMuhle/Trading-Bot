@@ -17,7 +17,7 @@ def calc_ema(values, time_period):
 
 
 def csv_to_dataset(csv_path, history_points, s_and_p_500, ma7, ma21, ma_his_window, ema12, ema26, mac, ten_day_momentum,
-                   upper_bands, lower_bands):
+                   upper_bands, lower_bands, volatilty_index_feature):
     print("Start csv_to_dataset")
     # Read the csv
     data = pd.read_csv(csv_path)
@@ -40,9 +40,21 @@ def csv_to_dataset(csv_path, history_points, s_and_p_500, ma7, ma21, ma_his_wind
 
     print(stock_index.head())
 
+    # Volatitly index
+    volatilty_index = pd.read_csv('data/SP500.csv')
+    del (volatilty_index['High'])
+    del (volatilty_index['Low'])
+    del (volatilty_index['Close'])
+    del (volatilty_index['Adj Close'])
+    del (volatilty_index['Volume'])
+
+    volatilty_index = volatilty_index.rename(columns={"Date": "timestamp", "Open": "Vol_Index"})
+
     # Merge
     if s_and_p_500:
         data = pd.merge(data, stock_index, on='timestamp')
+    if volatilty_index_feature:
+        data = pd.merge(data, volatilty_index, on='timestamp')
     print("Before reordering")
     print(data.head())
     print(data.shape)

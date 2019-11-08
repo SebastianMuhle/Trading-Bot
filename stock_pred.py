@@ -7,7 +7,7 @@ np.random.seed(4)
 def train_bot(file_path, history_points, number_of_epochs, two_lstm_layers, number_of_neurons_lstm,
               two_layers_second_branch, number_of_neurons_second_branch, dropout_rate, s_and_p_500, ma7, ma21,
               ma_his_window, ema12, ema26, mac, ten_day_momentum,
-              upper_bands, lower_bands):
+              upper_bands, lower_bands, volatilty_index_feature):
     # Model trains and predicts based on the last 50 days of trading
 
 
@@ -21,7 +21,8 @@ def train_bot(file_path, history_points, number_of_epochs, two_lstm_layers, numb
                                                                                                            mac,
                                                                                                            ten_day_momentum,
                                                                                                            upper_bands,
-                                                                                                           lower_bands
+                                                                                                           lower_bands,
+                                                                                                           volatilty_index_feature
                                                                                                            )
 
     # Train-Test Set split
@@ -39,11 +40,14 @@ def train_bot(file_path, history_points, number_of_epochs, two_lstm_layers, numb
     number_of_lstm_features = 5
     if s_and_p_500:
         number_of_lstm_features += 1
+    if volatilty_index_feature:
+        number_of_lstm_features += 1
 
     model = build_model(history_points=history_points, technical_indicators=technical_indicators,
                         two_lstm_layers=two_lstm_layers, number_of_neurons_lstm=number_of_neurons_lstm,
                         two_layers_second_branch=two_layers_second_branch,
-                        number_of_neurons_second_branch=number_of_neurons_second_branch, dropout_rate=dropout_rate)
+                        number_of_neurons_second_branch=number_of_neurons_second_branch, dropout_rate=dropout_rate,
+                        number_of_lstm_features=number_of_lstm_features)
     # Runs the training loop
     model.fit(x=[ohlcv_train, tech_ind_train], y=y_train, batch_size=32, epochs=number_of_epochs, shuffle=True, validation_split=0.1, verbose=2)
 
