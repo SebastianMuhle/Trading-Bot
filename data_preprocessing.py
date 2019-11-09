@@ -1,6 +1,7 @@
 import pandas as pd
 from sklearn import preprocessing
 import numpy as np
+from datetime import datetime
 np.random.seed(4)
 
 
@@ -18,7 +19,7 @@ def calc_ema(values, time_period):
 
 
 def csv_to_dataset(csv_path, history_points, s_and_p_500, ma7, ma21, ma_his_window, ema12, ema26, mac, ten_day_momentum,
-                   upper_bands, lower_bands, volatilty_index_feature, fourier):
+                   upper_bands, lower_bands, volatilty_index_feature, fourier, dollar_currency_index):
     print("Start csv_to_dataset")
     # Read the csv
     data = pd.read_csv(csv_path)
@@ -34,12 +35,12 @@ def csv_to_dataset(csv_path, history_points, s_and_p_500, ma7, ma21, ma_his_wind
         data['fft_absolute'] = fft_df['fft'].apply(lambda x: np.abs(x))
         data['fft_angle'] = fft_df['fft'].apply(lambda x: np.angle(x))
 
-    # Merge
+    # SP500
     if s_and_p_500:
         # Read S&P 500 and calculate the daily change rate
         stock_index = pd.read_csv('data/SP500.csv')
-        open_price = stock_index['Open']
-        change = (open_price - open_price.shift(1)) / open_price.shift(1) * 100
+        close_price = stock_index['Close']
+        change = (close_price - close_price.shift(1)) / close_price.shift(1) * 100
         stock_index['change_S&P500'] = change
         stock_index.dropna(inplace=True)
         # Drop unnecessary columns
@@ -52,17 +53,40 @@ def csv_to_dataset(csv_path, history_points, s_and_p_500, ma7, ma21, ma_his_wind
 
         print(stock_index.head())
         data = pd.merge(data, stock_index, on='timestamp')
+
+    # Volatitly index
     if volatilty_index_feature:
-        # Volatitly index
-        volatilty_index = pd.read_csv('data/SP500.csv')
+        volatilty_index = pd.read_csv('data/VIX.csv')
+        del (volatilty_index['Open'])
         del (volatilty_index['High'])
         del (volatilty_index['Low'])
-        del (volatilty_index['Close'])
         del (volatilty_index['Adj Close'])
         del (volatilty_index['Volume'])
 
-        volatilty_index = volatilty_index.rename(columns={"Date": "timestamp", "Open": "Vol_Index"})
+        volatilty_index = volatilty_index.rename(columns={"Date": "timestamp", "Close": "Vol_Index"})
         data = pd.merge(data, volatilty_index, on='timestamp')
+
+    #Dollar Index
+    if dollar_currency_index:
+        dollar_index = pd.read_csv('data/dollar.csv')
+        price_dollar = dollar_index['Price']
+        change_dollar = (price_dollar - price_dollar.shift(-1)) / price_dollar.shift(-1) * 100
+        dollar_index['change_dollar_index'] = change_dollar
+        dollar_index.dropna(inplace=True)
+
+        del (dollar_index['Price'])
+        del (dollar_index['Open'])
+        del (dollar_index['High'])
+        del (dollar_index['Low'])
+        del (dollar_index['Vol.'])
+        del (dollar_index['Change %'])
+
+        dollar_index['Date'] = pd.to_datetime(dollar_index['Date'])
+        dollar_index = dollar_index.rename(columns={"Date": "timestamp"})
+        dollar_index['timestamp'] = dollar_index['timestamp'].apply(lambda x: x.strftime('%Y-%m-%d'))
+
+        data = pd.merge(data, dollar_index, on='timestamp')
+
     print("Before reordering")
     print(data.head())
     print(data.shape)
