@@ -1,3 +1,9 @@
+from numpy.random import seed
+seed(1)
+import random as rn
+rn.seed(12345)
+import tensorflow as tf
+tf.random.set_seed(1)
 from keras.models import Model
 from keras.layers import Dense, Dropout, LSTM, Input, Activation, concatenate
 from keras import optimizers

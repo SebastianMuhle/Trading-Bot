@@ -11,6 +11,7 @@ def trading(ohlcv_test, tech_ind_test, y_normaliser, model):
     end = -1
 
     x = -1
+    last_trade = "Empty"
     for ohlcv, ind in zip(ohlcv_test[start: end], tech_ind_test[start: end]):
         normalised_price_today = ohlcv[-1][0]
         normalised_price_today = np.array([[normalised_price_today]])
@@ -19,9 +20,12 @@ def trading(ohlcv_test, tech_ind_test, y_normaliser, model):
         delta = predicted_price_tomorrow - price_today
         if delta > thresh:
             buys.append((x, price_today[0][0]))
-        elif delta < -thresh:
+            last_trade = "Buy"
+        elif delta < -thresh and last_trade == "Buy":
             sells.append((x, price_today[0][0]))
+            last_trade = "Sell"
         x += 1
+
     print('The numbers of buys and sells that our bot would have taken')
     print(f"buys: {len(buys)}")
     print(f"sells: {len(sells)}")
