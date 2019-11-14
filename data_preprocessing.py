@@ -20,11 +20,11 @@ def calc_ema(values, time_period):
 
 def csv_to_dataset(csv_path, history_points, s_and_p_500, ma7, ma21, ma_his_window, ema12, ema26, mac, ten_day_momentum,
                    upper_bands, lower_bands, volatilty_index_feature, fourier, dollar_currency_index):
-    print("Start csv_to_dataset")
+    #print("Start csv_to_dataset")
     # Read the csv
     data = pd.read_csv(csv_path)
-    print(data.head())
-    print(data.shape)
+    #print(data.head())
+    #print(data.shape)
 
     # fourier
     if fourier:
@@ -51,7 +51,7 @@ def csv_to_dataset(csv_path, history_points, s_and_p_500, ma7, ma21, ma_his_wind
         del (stock_index['Adj Close'])
         del (stock_index['Volume'])
 
-        print(stock_index.head())
+        #print(stock_index.head())
         data = pd.merge(data, stock_index, on='timestamp')
 
     # Volatitly index
@@ -87,12 +87,12 @@ def csv_to_dataset(csv_path, history_points, s_and_p_500, ma7, ma21, ma_his_wind
 
         data = pd.merge(data, dollar_index, on='timestamp')
 
-    print("Before reordering")
-    print(data.head())
-    print(data.shape)
-    print("After reordering")
+    #print("Before reordering")
+    #print(data.head())
+    #print(data.shape)
+    #print("After reordering")
     data = data.reindex(index=data.index[::-1])
-    print(data.head())
+    #print(data.head())
 
 
     # Drop the timestamp of the data
@@ -111,7 +111,7 @@ def csv_to_dataset(csv_path, history_points, s_and_p_500, ma7, ma21, ma_his_wind
 
     # TODO replace 'ohlcv_histories_normalised' with 'training window'
     # TODO and add the comment # Containing open high low close volume
-    print('Length data normalised', len(data_normalised))
+    #print('Length data normalised', len(data_normalised))
     ohlcv_histories_normalised = np.array(
         [data_normalised[i:i + history_points].copy() for i in range(len(data_normalised) - history_points)])
     ohlcv_histories_unnormalised = np.array(
@@ -120,7 +120,7 @@ def csv_to_dataset(csv_path, history_points, s_and_p_500, ma7, ma21, ma_his_wind
         [data_normalised[:, 0][i + history_points].copy() for i in range(len(data_normalised) - history_points)])
     next_day_open_values_normalised = np.expand_dims(next_day_open_values_normalised, -1)
 
-    print('Shape ohlcv', ohlcv_histories_normalised.shape)
+    #print('Shape ohlcv', ohlcv_histories_normalised.shape)
     # Used for plotting later
     next_day_open_values = np.array([data[:, 0][i + history_points].copy() for i in range(len(data) - history_points)])
     next_day_open_values = np.expand_dims(next_day_open_values, -1)

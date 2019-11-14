@@ -55,4 +55,5 @@ def build_model(history_points, technical_indicators, number_of_lstm_features=5,
     model = Model(inputs=[lstm_branch.input, technical_indicators_branch.input], outputs=z)
     adam = optimizers.Adam(lr=0.0005)
     model.compile(optimizer=adam, loss='mse')
+
     return model
