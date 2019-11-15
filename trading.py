@@ -3,6 +3,17 @@ np.random.seed(4)
 
 
 def trading(ohlcv_test, tech_ind_test, y_normaliser, model, purchase_amt, trading_cost):
+    '''
+    This function controlls the traiding. First the trade are executed then the earning are calculated
+    :param ohlcv_test: Data used for prediction
+    :param tech_ind_test: Data used for prediction
+    :param y_normaliser: Used to denormlize the data
+    :param model: The trained model used for prediction
+    :param purchase_amt: The buying amount of the bot for one trade
+    :param trading_cost: The trading cost the bot faces
+    :return: Buy and sell patterns for plotting
+    '''
+    # Initalize the trading arrays
     buys = []
     sells = []
     thresh = trading_cost + 0.1
@@ -11,7 +22,10 @@ def trading(ohlcv_test, tech_ind_test, y_normaliser, model, purchase_amt, tradin
     end = -1
 
     x = -1
+    # Used to make sure that the bot does not perform to sell after enoughter, because the bot sells all stock in a
+    # sale trade
     last_trade = "Empty"
+    # Creates the traiding process
     for ohlcv, ind in zip(ohlcv_test[start: end], tech_ind_test[start: end]):
         normalised_price_today = ohlcv[-1][0]
         normalised_price_today = np.array([[normalised_price_today]])
@@ -30,22 +44,18 @@ def trading(ohlcv_test, tech_ind_test, y_normaliser, model, purchase_amt, tradin
     print(f"buys: {len(buys)}")
     print(f"sells: {len(sells)}")
 
+    # Compute the earnings
     def compute_earnings(buys_, sells_):
         stock = 0
         balance = 0
         while len(buys_) > 0 and len(sells_) > 0:
-            #print("Buy:" + str(buys_[0][0]) + " Sell:" + str(sells_[0][0]))
             if buys_[0][0] < sells_[0][0]:
-                # time to buy $10 worth of stock
                 balance -= purchase_amt
                 stock += purchase_amt / buys_[0][1]
-                #print("Buy Balance:" + str(balance) + " Stock:" + str(stock))
                 buys_.pop(0)
             else:
-                # time to sell all of our stock
                 balance += stock * sells_[0][1]
                 stock = 0
-                #print("Sell Balance:" + str(balance) + " Stock:" + str(stock))
                 sells_.pop(0)
         # Sell the last stock if you still have something in your account
         # Makes sure, that all stock is sold and we can compare the returns
@@ -53,7 +63,6 @@ def trading(ohlcv_test, tech_ind_test, y_normaliser, model, purchase_amt, tradin
         if len(sells_) > 0:
             balance += stock * sells_[0][1]
             stock = 0
-            #print("Sell Balance:" + str(balance) + " Stock:" + str(stock))
             sells_.pop(0)
         total_trading_cost = (len(buys) + len(sells)) * trading_cost
         print('The money our bot would have earned')

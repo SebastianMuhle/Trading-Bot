@@ -8,10 +8,36 @@ def train_bot(file_path, history_points, number_of_epochs, two_lstm_layers, numb
               two_layers_second_branch, number_of_neurons_second_branch, dropout_rate, s_and_p_500, ma7, ma21,
               ma_his_window, ema12, ema26, mac, ten_day_momentum,
               upper_bands, lower_bands, volatilty_index_feature, fourier, dollar_currency_index):
-    # Model trains and predicts based on the last 50 days of trading
+    '''
+    One of our two model file. This one controls the whole training process. First the dataset is created.
+    Then the test-train split is performed. Next the model is build and trained. Next the model gets evaluated and the
+    results are getting returned to be printed and used in the trading bot
+    :param file_path: Path to the csv_file of the selected stock. Used to import the csv with pandas
+    :param history_points: How long is the time frame you want to choose
+    :param number_of_epochs: Number of epochs used for training
+    :param two_lstm_layers: If true two LSTM-layers are used
+    :param number_of_neurons_lstm: Defines the number of neurons used for the LSTM-layers
+    :param two_layers_second_branch: Defines if the normal neural network part has two layers
+    :param number_of_neurons_second_branch: Definies the number of neurons in the second branch
+    :param dropout_rate: Defines the dropout rate
+    :param s_and_p_500: If true this features is used
+    :param ma7: If true this features is used
+    :param ma21: If true this features is used
+    :param ma_his_window: If true this features is used
+    :param ema12: If true this features is used
+    :param ema26: If true this features is used
+    :param mac: If true this features is used
+    :param ten_day_momentum: If true this features is used
+    :param upper_bands: If true this features is used
+    :param lower_bands: If true this features is used
+    :param volatilty_index_feature: If true this features is used
+    :param fourier: If true this features is used
+    :param dollar_currency_index: If true this features is used
+    :return: Returns the data for printing and for the trading bot
+    '''
 
 
-    # Get the data
+    # Create the data set
     ohlcv_histories, technical_indicators, next_day_open_values, unscaled_y, y_normaliser = csv_to_dataset(file_path,
                                                                                                            history_points,
                                                                                                            s_and_p_500,
@@ -49,6 +75,7 @@ def train_bot(file_path, history_points, number_of_epochs, two_lstm_layers, numb
     if dollar_currency_index:
         number_of_lstm_features += 1
 
+    # Builds the model
     model = build_model(history_points=history_points, technical_indicators=technical_indicators,
                         two_lstm_layers=two_lstm_layers, number_of_neurons_lstm=number_of_neurons_lstm,
                         two_layers_second_branch=two_layers_second_branch,

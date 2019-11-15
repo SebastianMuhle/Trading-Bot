@@ -6,12 +6,14 @@ np.random.seed(4)
 
 
 def calc_ema(values, time_period):
+        '''
+        :param values: Values used to calculate the ema
+        :param time_period: Time period that is used to calculate the ema
+        :return: The ema values
+        '''
         sma = np.mean(values[:,3])
-        #ma50 = np.mean(his[:, 3])
-
         ema_values = [sma]
         k = 2 / (1 + time_period)
-
         for i in range(len(values) - time_period, len(values)):
             close = values[i][3]
             ema_values.append(close * k + ema_values[-1] * (1 - k))
@@ -20,13 +22,30 @@ def calc_ema(values, time_period):
 
 def csv_to_dataset(csv_path, history_points, s_and_p_500, ma7, ma21, ma_his_window, ema12, ema26, mac, ten_day_momentum,
                    upper_bands, lower_bands, volatilty_index_feature, fourier, dollar_currency_index):
-    #print("Start csv_to_dataset")
+    '''
+    This function creates the dataset. If a feature is selected as true it is added to the dataset.
+    The detail working of the function is describe with comments in the code.
+    :param csv_path: Path to the csv_file of the selected stock. Used to import the csv with pandas
+    :param history_points: How long is the time frame you want to choose
+    :param s_and_p_500: If true the S&P 500 feature is used
+    :param ma7: If true the ma7 feature is used
+    :param ma21: If true the ma21 feature is used
+    :param ma_his_window: If true the ma_his_window is used
+    :param ema12: If true the ema12 is used
+    :param ema26: If true the ema26 is used
+    :param mac: If true the mac is used
+    :param ten_day_momentum: If true the ten_day_momentum is used
+    :param upper_bands: If true the upper_bands is used
+    :param lower_bands: If true the lower_bands is used
+    :param volatilty_index_feature: If true the volatility_index_features is used
+    :param fourier: If true the fourier is used
+    :param dollar_currency_index: If true the dollar_currency_index is used
+    :return: Test and training data is returned as well as the normalizer to undo the normalization.
+    '''
     # Read the csv
     data = pd.read_csv(csv_path)
-    #print(data.head())
-    #print(data.shape)
 
-    # fourier
+    # Implementation of the Fourier transformation
     if fourier:
         data_FT = data[['close']]
         a = data_FT['close'].tolist()
@@ -50,8 +69,6 @@ def csv_to_dataset(csv_path, history_points, s_and_p_500, ma7, ma21, ma_his_wind
         del (stock_index['Close'])
         del (stock_index['Adj Close'])
         del (stock_index['Volume'])
-
-        #print(stock_index.head())
         data = pd.merge(data, stock_index, on='timestamp')
 
     # Volatitly index
@@ -87,12 +104,8 @@ def csv_to_dataset(csv_path, history_points, s_and_p_500, ma7, ma21, ma_his_wind
 
         data = pd.merge(data, dollar_index, on='timestamp')
 
-    #print("Before reordering")
-    #print(data.head())
-    #print(data.shape)
-    #print("After reordering")
+    # Reversed the order of the data so that the older that comes first
     data = data.reindex(index=data.index[::-1])
-    #print(data.head())
 
 
     # Drop the timestamp of the data
@@ -109,9 +122,7 @@ def csv_to_dataset(csv_path, history_points, s_and_p_500, ma7, ma21, ma_his_wind
     data_normaliser = preprocessing.MinMaxScaler()
     data_normalised = data_normaliser.fit_transform(data)
 
-    # TODO replace 'ohlcv_histories_normalised' with 'training window'
-    # TODO and add the comment # Containing open high low close volume
-    #print('Length data normalised', len(data_normalised))
+    # Creation of the training windows
     ohlcv_histories_normalised = np.array(
         [data_normalised[i:i + history_points].copy() for i in range(len(data_normalised) - history_points)])
     ohlcv_histories_unnormalised = np.array(
@@ -120,7 +131,6 @@ def csv_to_dataset(csv_path, history_points, s_and_p_500, ma7, ma21, ma_his_wind
         [data_normalised[:, 0][i + history_points].copy() for i in range(len(data_normalised) - history_points)])
     next_day_open_values_normalised = np.expand_dims(next_day_open_values_normalised, -1)
 
-    #print('Shape ohlcv', ohlcv_histories_normalised.shape)
     # Used for plotting later
     next_day_open_values = np.array([data[:, 0][i + history_points].copy() for i in range(len(data) - history_points)])
     next_day_open_values = np.expand_dims(next_day_open_values, -1)
@@ -130,7 +140,6 @@ def csv_to_dataset(csv_path, history_points, s_and_p_500, ma7, ma21, ma_his_wind
     y_normaliser.fit(next_day_open_values)
 
     technical_indicators = []
-    # TODO add an input parameter, that leads you decide which technical indicators to choose from
     for his in ohlcv_histories_unnormalised:
         # note since we are using his[3] we are taking the SMA of the closing price
         ma7 = np.mean(his[-7:, 3])
@@ -151,7 +160,7 @@ def csv_to_dataset(csv_path, history_points, s_and_p_500, ma7, ma21, ma_his_wind
 
     technical_indicators = np.array(technical_indicators)
 
-    # Drop not selected features
+    # Drop not selected technical features
     delete = []
     if not ma7:
         delete.append(0)
