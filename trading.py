@@ -25,7 +25,7 @@ def trading(ohlcv_test, tech_ind_test, y_normaliser, model, purchase_amt, tradin
     # Used to make sure that the bot does not perform to sell after enoughter, because the bot sells all stock in a
     # sale trade
     last_trade = "Empty"
-    # Creates the traiding process
+    # Creates the traiding process and performs the trades
     for ohlcv, ind in zip(ohlcv_test[start: end], tech_ind_test[start: end]):
         normalised_price_today = ohlcv[-1][0]
         normalised_price_today = np.array([[normalised_price_today]])
