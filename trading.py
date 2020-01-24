@@ -2,7 +2,7 @@ import numpy as np
 np.random.seed(4)
 
 
-def trading(ohlcv_test, tech_ind_test, y_normaliser, model, purchase_amt, trading_cost):
+def trading(ohlcv_test, tech_ind_test, y_normaliser, model, purchase_amt, leverage):
     '''
     This function controlls the traiding. First the trade are executed then the earning are calculated
     :param ohlcv_test: Data used for prediction
@@ -16,7 +16,7 @@ def trading(ohlcv_test, tech_ind_test, y_normaliser, model, purchase_amt, tradin
     # Initalize the trading arrays
     buys = []
     sells = []
-    thresh = trading_cost + 0.1
+    #thresh = trading_cost + 0.1
 
     start = 0
     end = -1
@@ -25,6 +25,11 @@ def trading(ohlcv_test, tech_ind_test, y_normaliser, model, purchase_amt, tradin
     # Used to make sure that the bot does not perform to sell after enoughter, because the bot sells all stock in a
     # sale trade
     last_trade = "Empty"
+    count_right_long = 0
+    count_false_long = 0
+    count_right_short = 0
+    count_false_short = 0
+    total_earnings = []
     # Creates the traiding process and performs the trades
     for ohlcv, ind in zip(ohlcv_test[start: end], tech_ind_test[start: end]):
         normalised_price_today = ohlcv[-1][0]
@@ -32,12 +37,29 @@ def trading(ohlcv_test, tech_ind_test, y_normaliser, model, purchase_amt, tradin
         price_today = y_normaliser.inverse_transform(normalised_price_today)
         predicted_price_tomorrow = np.squeeze(y_normaliser.inverse_transform(model.predict([[ohlcv], [ind]])))
         delta = predicted_price_tomorrow - price_today
+        thresh = price_today * 0.0003
+        normalised_price_tomorrow = ohlcv[0][0]
+        normalised_price_tomorrow = np.array([[normalised_price_tomorrow]])
+        price_tomorrow = y_normaliser.inverse_transform(normalised_price_tomorrow)
         if delta > thresh:
-            buys.append((x, price_today[0][0]))
-            last_trade = "Buy"
-        elif delta < -thresh and last_trade == "Buy":
-            sells.append((x, price_today[0][0]))
-            last_trade = "Sell"
+            earnings = price_tomorrow - price_today - thresh
+            if earnings > 0:
+                count_right_long += 1
+            else:
+                count_false_long += 1
+            buys.append((x, price_today[0][0], predicted_price_tomorrow, price_tomorrow))
+            total_earnings.append(earnings)
+            last_trade = "Long"
+        elif delta < -thresh:
+            earnings = price_today - price_tomorrow - thresh
+            earnings = earnings * leverage
+            if earnings > 0:
+                count_right_short += 1
+            else:
+                count_false_short += 1
+            sells.append((x, price_today[0][0], predicted_price_tomorrow, price_tomorrow))
+            total_earnings.append(earnings)
+            last_trade = "Short"
         x += 1
 
     print('The numbers of buys and sells that our bot would have taken')
@@ -46,27 +68,15 @@ def trading(ohlcv_test, tech_ind_test, y_normaliser, model, purchase_amt, tradin
 
     # Compute the earnings
     def compute_earnings(buys_, sells_):
-        stock = 0
-        balance = 0
-        while len(buys_) > 0 and len(sells_) > 0:
-            if buys_[0][0] < sells_[0][0]:
-                balance -= purchase_amt
-                stock += purchase_amt / buys_[0][1]
-                buys_.pop(0)
-            else:
-                balance += stock * sells_[0][1]
-                stock = 0
-                sells_.pop(0)
-        # Sell the last stock if you still have something in your account
-        # Makes sure, that all stock is sold and we can compare the returns
-        # One buy sell order open, but no buy order left
-        if len(sells_) > 0:
-            balance += stock * sells_[0][1]
-            stock = 0
-            sells_.pop(0)
-        total_trading_cost = (len(buys) + len(sells)) * trading_cost
+        total_earnings_output = sum(total_earnings)
         print('The money our bot would have earned')
-        print(f"earnings: ${balance - total_trading_cost}")
+        print(f"earnings: ${total_earnings_output}")
+        print("Count_right_long:", count_right_long)
+        print("Count_false_long:", count_false_long)
+        print("Count_right_short:", count_right_short)
+        print("Count_false_short:", count_false_short)
+
+
 
     # we create new lists so we dont modify the original
     compute_earnings([b for b in buys], [s for s in sells])
